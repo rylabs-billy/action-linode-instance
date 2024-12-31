@@ -1,5 +1,5 @@
 linode_api4==5.23.0
-pytest==8.3.3
+pytest==8.3.4
 pytest-env==1.1.5
 pytest-mock==3.14.0
 flake8==7.1.1
