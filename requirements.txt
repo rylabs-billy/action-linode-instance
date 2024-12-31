@@ -1,4 +1,4 @@
-linode_api4==5.23.0
+linode_api4==5.25.0
 pytest==8.3.3
 pytest-env==1.1.5
 pytest-mock==3.14.0
