@@ -1,0 +1,55 @@
+---
+name: 'Linode GitHub Actions Runner'
+description: 'Deploys a Linode instance for a self-hosted GitHub runner.'
+author: 'Billy Thompson <bthompso@akamai.com>'
+branding:
+  icon: 'server'
+  color: 'gray-dark'
+inputs:
+  token:
+    description: 'The Linode API Personal Access Token to authenticate with.'
+    required: true
+  label:
+    description: 'Human readable label for the Linode instance.'
+    default: 'linode-action'
+  ssh-key:
+    description: 'Public SSH key to access the Linode. (optional)'
+    required: false
+  image:
+    description: 'Linux image to provision Linode with.'
+    default: 'linode/ubuntu22.04'
+  user-data:
+    description: 'Cloud-init base64 encoded user-data. (optional)'
+    required: false
+  private-ip:
+    description: 'Add a private IP to the Linode instance.'
+    default: true
+  region:
+    description: 'Region where the Linode will be deployed.'
+    default: 'us-ord'
+  type:
+    description: 'Type of Linode instance to be created.'
+    default: 'g6-standard-4'
+  firewall-id:
+    description: 'Cloud Firewall to attach the Linode instance (optional).'
+    required: false
+    default: null
+  tag:
+    description: 'Tag for your Linode Instance (optional).'
+    required: false
+outputs:
+  linode-id:
+    description: 'Linode instance ID'
+runs:
+  using: 'docker'
+  image: 'Dockerfile'
+  env:
+    TOKEN: ${{ inputs.token }}
+    LABEL: ${{ inputs.label }}
+    IMAGE: ${{ inputs.image }}
+    USER_DATA: ${{ inputs.user-data }}
+    PRIVATE_IP: ${{ inputs.private-ip }}
+    REGION: ${{ inputs.region }}
+    TYPE: ${{ inputs.type }}
+    FIREWALL_ID: ${{ inputs.firewall-id }}
+    TAG: ${{ inputs.tag }}

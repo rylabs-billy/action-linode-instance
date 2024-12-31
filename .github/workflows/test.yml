@@ -1,0 +1,76 @@
+name: test
+
+on:
+  push:
+    branches:
+      - main
+      - dev
+    paths-ignore:
+      - '**/README.md'
+  pull_request:
+  workflow_dispatch:
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    strategy:
+      matrix:
+        python-version: ['3.8','3.9','3.10','3.11', '3.12']
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 1
+
+      - uses: actions/setup-python@v5
+        with:
+          python-version: ${{ matrix.python-version }}
+
+      - name: Install requirements
+        run: |
+          pip install --upgrade pip
+          pip install --no-cache-dir -r requirements.txt
+
+      - name: Test all inputs
+        id: all-inputs
+        run: pytest test/test.py
+        env:
+          TOKEN: 12345
+          LABEL: test_runner
+          SSH_KEY: ssh-ed25519 AAAAC3NzaC1lZDI1NTE5A bthompson@linode.com
+          IMAGE: linode/debian12
+          USER_DATA: I2Nsb3VkLWNvbmZpZwp
+          PRIVATE_IP: False
+          REGION: us-ord
+          TYPE: g6-standard-4
+          FIREWALL_ID: 678910
+          TAG: test
+
+      - name: Test optional inputs
+        id: optional-inputs
+        run: pytest test/test.py
+        env:
+          TOKEN: 12345
+          SSH_KEY: ssh-ed25519 AAAAC3NzaC1lZDI1NTE5A bthompson@linode.com
+          USER_DATA: I2Nsb3VkLWNvbmZpZwp
+          FIREWALL_ID: 678910
+          TAG: test
+
+      - name: Test default inputs
+        id: default-inputs
+        run: pytest test/test.py
+        env:
+          TOKEN: 12345
+          
+      - name: Verify that Docker image builds
+        run: docker build . --file Dockerfile
+
+      - name: Verify outputs
+        shell: bash
+        run: |
+          [ "$ALL" == "12345" ] && printf '\u2705 Test passed!\n' || { printf '\u274c Test failed!'; exit 1; }
+          [ "$OPTIONAL" == "12345" ] && printf '\u2705 Test passed!\n' || { printf '\u274c  Test failed!'; exit 1; }
+          [ "$DEFAULT" == "12345" ] && printf '\u2705 Test passed!\n' || { printf '\u274c  Test failed!'; exit 1; }
+        env:
+          ALL: ${{ fromJson(steps.all-inputs.outputs.linode-id) }}
+          OPTIONAL: ${{ fromJson(steps.optional-inputs.outputs.linode-id) }}
+          DEFAULT: ${{ fromJson(steps.default-inputs.outputs.linode-id) }}
